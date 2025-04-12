@@ -1,0 +1,640 @@
+% !TEX program = LuaLaTeX+se
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{libris}[2025/04/12 v0.0.0 Configuration pour le chant grégorien]
+\def\@version{0.0.0}
+\def\@date{}
+
+\usepackage{graphicx}
+
+\graphicspath{{ressources/}}
+
+% Chargement du module Lua
+\directlua{
+    local libris = require("ressources/lua/libris")
+    _G.libris = libris  % Rend le module accessible globalement
+}
+
+% Pour la gestion des options
+\RequirePackage{kvoptions}
+\RequirePackage{keyval}
+\RequirePackage{ifthen}
+\SetupKeyvalOptions{family=libris,prefix=libris@}
+
+% Déclaration des options avec valeurs
+\DeclareStringOption[true]{cadre}
+\DeclareStringOption[20]{linesize}
+\DeclareStringOption[12]{police}
+\DeclareStringOption[16]{notes}
+\DeclareStringOption[visible]{chord}
+\DeclareStringOption[true]{color}
+\DeclareStringOption[LibrisRed]{cadrecolor}
+\DeclareStringOption[LibrisRed]{rubricolor}
+\DeclareStringOption[LibrisRed]{linecolor}
+\DeclareStringOption[LibrisRed]{initialcolor}
+\DeclareStringOption[LibrisBlue]{colorchord}
+\DeclareStringOption[LibrisRed]{symbolcolor}
+
+% Traitement des options
+\ProcessKeyvalOptions*
+
+% Affectation des valeurs
+\def\cadre{\libris@cadre}
+\def\linesize{\libris@linesize}
+\def\notesize{\libris@notes}
+\def\libriscolor{\libris@color}
+\def\chordvisibility{\libris@chord}
+
+
+\ifthenelse{\equal{\libriscolor}{true}}{%
+    \def\rubricolor{\libris@rubricolor}
+    \def\cadrecolor{\libris@cadrecolor}
+    \def\initialcolor{\libris@initialcolor}
+    \def\linecolor{\libris@linecolor}
+    \def\symbolcolor{\libris@symbolcolor}
+}{
+    \def\rubricolor{black}
+    \def\cadrecolor{black}
+    \def\initialcolor{black}
+    \def\linecolor{black}
+    \def\symbolcolor{black}
+}%
+
+\ifthenelse{\equal{\rubricolor}{black}}{%
+    \def\rubricfont{\rubrics}
+}{
+    \def\rubricfont{}
+}%
+
+% PACKAGES %
+\RequirePackage[no-math]{fontspec}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{yfonts}
+\RequirePackage[Change-SemiBold]{mathfont}
+\RequirePackage{lettrine}
+\RequirePackage{import}
+
+% FONTS %
+%\defaultfontfeatures{Path=fonts/truetype/libris/}
+\newcommand{\fontpath}{C:/Users/msergent/mytexmf/fonts/truetype/libris/}
+\newcommand{\fontpathotf}{C:/Users/msergent/mytexmf/fonts/opentype/libris/}
+
+\setmainfont{}[
+
+    ]
+
+\newfontfamily\rubrics{}[
+    
+]
+\newfontfamily\annotation{}[
+    
+]
+\newfontfamily\abovelinestext{}[
+    
+]
+\newfontfamily\titrefont{}[
+    
+]
+\newfontfamily\chords{}[
+    
+]
+\newfontfamily\ornatedInitial{}[
+
+]%rosecaps .ttf  
+\newfontfamily\initial{}[
+    
+]
+\newfontfamily\firstWord{}[
+    
+]
+\newfontfamily\firstSyllable{}[
+    
+]
+\newfontfamily\versicle{Gregorio}
+
+\RequirePackage{fix-cm}
+\RequirePackage[
+    paperheight=205mm,
+    paperwidth=135mm,
+    twoside,
+    includeheadfoot, 
+    nofoot,
+    left=1.5cm,
+    right=1.5cm,
+    top=1.5cm,
+    bottom=1.5cm,
+    headheight=10pt,
+    headsep=15pt,
+]{geometry}
+
+\RequirePackage{xcolor}
+\RequirePackage{ulem}
+\RequirePackage{multicol}
+\RequirePackage{xparse}
+\RequirePackage[autocompile]{gregoriotex}
+\RequirePackage{tikz}
+\RequirePackage{eso-pic}
+\usetikzlibrary{calc}
+\RequirePackage{fancyhdr}
+\RequirePackage[english,french,ecclesiasticlatin.usej,activeacute]{babel}%
+\babelprovide[hyphenrules=latin]{ecclesiasticlatin}%
+
+%%%%%%% Configuration du cadre rouge %%%%%%%
+% Ajout de la commande pour le filet rouge
+\newcommand{\cadreRouge}{%
+    \begin{tikzpicture}[overlay, remember picture]
+        \draw[\cadrecolor, thin] ($(current page.north west) + (1.2cm,-1.2cm)$)
+            rectangle ($(current page.south east) + (-1.2cm,1.2cm)$);
+        \draw[\cadrecolor, ultra thick] ($(current page.north west) + (1.1cm,-1.1cm)$)
+            rectangle ($(current page.south east) + (-1.1cm,1.1cm)$);
+    \end{tikzpicture}%
+}
+% Ajout du filet à chaque page
+\ifthenelse{\equal{\cadre}{true}}{%
+    \AddToShipoutPictureBG{\cadreRouge}
+}{}%
+
+%%%%%%% Configuration de l'en-tête et du pied de page %%%%%%%
+% Configuration de l'en-tête et du pied de page
+\pagestyle{fancy}
+\fancyhf{}  % Efface tous les champs
+
+% Définition du style de l'en-tête
+\renewcommand{\headrulewidth}{0.4pt}  % Épaisseur du filet
+% Commandes pour gérer le filet d'en-tête
+\newcommand{\disableHeaderRule}{%
+    \renewcommand{\headrulewidth}{0pt}%
+}
+
+\newcommand{\enableHeaderRule}{%
+    \renewcommand{\headrulewidth}{0.4pt}%
+}
+
+% Placement des numéros de page
+\fancyhead[RO,LE]{\small\thepage}
+\fancyhead[CO,CE]{\small\leftmark}
+
+%%%%%%% Configuration des couleurs %%%%%%%
+% Définition des couleurs 
+\definecolor{LibrisRed}{RGB}{200,40,35}
+\definecolor{gregoriocolor}{RGB}{200,40,35}
+\definecolor{LibrisBlue}{RGB}{30,65,120}
+
+% MAIN PARAMETERS %
+
+% Command Text %
+\newcommand{\CrossAlt}{%
+    \gredefsymbol{GreCrossAlt}{greextra}{Cross.alt}%
+    \raisebox{-0.2ex}{\color{\symbolcolor}\GreCrossAlt}%
+}
+\def\GreStar{{\color{\symbolcolor}\greheightstar\selectfont}~}
+\def\GreCross{{\color{\symbolcolor}\grealtcross\selectfont}~}
+\def\GreDagger{{\color{\symbolcolor}\dag\selectfont}~}% \dag \textdagger \ddag \textdaggerdbl \maltese
+\newcommand*{\R}{{\color{\symbolcolor}{\Rbar.}}~}
+\newcommand*{\V}{{\color{\symbolcolor}{\Vbar.}}~}
+
+
+\NewDocumentCommand{\texteFormate}{O{}m}{%
+    \vspace*{-0.9em}\begin{multicols}{2}
+        \setlength{\columnseprule}{0.4pt}    % Épaisseur du trait vertical
+        \setlength{\columnsep}{20pt}         % Espace entre les colonnes
+        \setlength{\multicolsep}{0pt}        % Réduit l'espace entre paragraphes
+        \setlength{\columnsep}{1.5em}        % Ajuste l'espace entre colonnes
+
+        % Extrait le premier caractère et le reste du texte
+        \expandafter\directlua{libris.firstchar([[#2]])}%
+        {#1}
+    \end{multicols}
+}
+
+\NewDocumentCommand{\Titre}{m}{%
+    % Désactive l'en-tête pour cette page
+    \thispagestyle{empty}
+    % Ajoute l'entrée dans la table des matières
+    \addcontentsline{toc}{chapter}{#1}
+    % Définit le titre courant pour l'en-tête
+    \markboth{#1}{#1}
+    % Affiche le titre
+    \begin{center}
+    {\titrefont\textcolor{LibrisRed}{{\LARGE\MakeUppercase{#1}\selectfont}}}%
+    \end{center}
+    %\vspace*{-0.9em}
+}
+
+\NewDocumentCommand{\TitreOffice}{m}{%
+    %\vspace*{-0.9em}
+    \begin{center}
+    {\titrefont\textcolor{black}{{\Large\MakeUppercase{#1}\selectfont}}}%
+    \end{center}
+    %\vspace*{-0.9em}
+}
+
+\NewDocumentCommand{\titre}{m}{%
+    \vspace*{-0.9em}
+    \begin{center}
+    {\annotation\textcolor{black}{{\scshape{#1}\selectfont}}}%
+    \end{center}
+    \vspace*{-0.9em}
+}
+
+\NewDocumentCommand{\bc}{m}{{\normalfont\color{black}{#1}}}
+
+\NewDocumentCommand{\Rubric}{m}{%
+    {\rubricfont\textcolor{\rubricolor}{{\small{#1}}\selectfont}}%
+}
+
+\NewDocumentCommand{\TextOraison}{m}{%
+        {\titrefont\textcolor{LibrisRed}{\normalsize{Orémus.}}\selectfont}%
+        {\hfill\titrefont\textcolor{LibrisRed}{\normalsize{Oratio.}\quad~}\selectfont}%
+    %\vspace{-7mm}% Ajoute un peu d'espace après le titre
+    \texteFormate[\hfill~ \R Amen]{#1}%
+}
+
+\NewDocumentCommand{\TextCollecte}{m}{%
+    \begin{center}
+        {\titrefont\textcolor{LibrisRed}{\normalsize{Collecte.}}\selectfont}%
+    \end{center}
+    \vspace*{-0.9em}
+    %\vspace{-7mm}% Ajoute un peu d'espace après le titre
+    \texteFormate{#1}%
+}
+
+\NewDocumentCommand{\TextCapitule}{mm}{%
+        {\titrefont\textcolor{black}{\normalsize{Capitulum.}}\selectfont}%
+        {\hfill\rubricfont\textcolor{\rubricolor}{\normalsize{#1}\quad~}\selectfont}%
+    %\vspace{-7mm}% Ajoute un peu d'espace après le titre
+    \texteFormate[\hfill~ \R Deo~grátias.]{#2}%
+
+}
+
+\NewDocumentCommand{\TextEpistolae}{mmm}{%
+        {\titrefont\textcolor{black}{\normalsize{Léctio Epistolae beati #1}}\selectfont}%
+        {\hfill\rubricfont\textcolor{\rubricolor}{\normalsize{#2}\quad~}\selectfont}%
+    
+    %\vspace{-7mm}% Ajoute un peu d'espace après le titre
+    \texteFormate{#3}%
+}
+
+\NewDocumentCommand{\TextEvang}{mmm}{%
+        {\titrefont\textcolor{black}{\normalsize{\CrossAlt~ Sequéntia sancti Evangélii secundum {#1}.}}\selectfont}%
+        {\hfill\rubricfont\textcolor{\rubricolor}{\normalsize{#2}\quad~}\selectfont}%
+    
+    %\vspace{-7mm}% Ajoute un peu d'espace après le titre
+    \texteFormate{#3}%
+}
+
+\NewDocumentCommand{\TextVerset}{mm}{%
+    {\V~{#1}}%
+    {\hfill\R~{#2}\quad~}%
+}
+
+\newcommand{\extractTitre}[1]{%
+    \directlua{
+        local str = "\luaescapestring{#1}"
+        local titre = string.match(str, "^([^-]+)")
+        tex.sprint(titre or str)
+    }%
+}
+
+\define@key{TextPsaume}{title}{\def\TextPsaume@title{#1}}
+\define@key{TextPsaume}{ligne}[1]{\def\TextPsaume@ligne{#1}}
+\define@key{Textpsaume}{score}{\setkeys{score}{#1}}
+
+% Options pour score
+\define@key{score}{justified}[false]{\def\score@justified{#1}}
+\define@key{score}{notesize}[\notesize]{\def\score@notesize{#1}}
+\define@key{score}{linecolor}[\linecolor]{\def\score@linecolor{#1}}
+\define@key{score}{chord}[\chordvisibility]{\def\score@chord{#1}}
+
+\NewDocumentCommand{\TextPsaume}{O{}m}{%
+
+    % initialisation des valeurs par défaut
+    \def\TextPsaume@ligne{1}
+    \def\TextPsaume@title{\extractTitre{#2}}
+    \def\score@justified{false}
+    \def\score@notesize{\notesize}
+    \def\score@linecolor{\linecolor}
+    \def\score@chord{\chordvisibility}
+
+    % Traitement des options
+    \setkeys{TextPsaume}{#1}%
+
+    \def\star{{\color{black}\gresixstar\selectfont} }
+    \def\dagger{{\color{black}\dag\selectfont} }
+    \def\numbcolor{LibrisRed}
+    \def\numbfont{\annotation}
+
+    \ifnum\TextPsaume@ligne=1
+        \begin{center}
+            {\titrefont\textcolor{\rubricolor}{\normalsize{Psaume \TextPsaume@title.}}\selectfont}%
+        \end{center}
+        \vspace{-0.9em}
+        \input{ressources/psalms/#2}
+    \else
+        \begin{center}
+            {\titrefont\textcolor{\rubricolor}{\normalsize{Psaume \TextPsaume@title.}}\selectfont}%
+        \end{center}
+        \scorepsalm[
+            justified=\score@justified,
+            notesize=\score@notesize,
+            linecolor=\score@linecolor,
+            chord=\score@chord
+        ]{ressources/psalms/gabc/#2}
+        \directlua{
+            libris.startligne(
+                [[\TextPsaume@ligne]], 
+                [[ressources/psalms/#2]]
+            )
+        }%
+    \fi   
+}
+
+% Options pour TextCantique
+\define@key{TextCantique}{title}{\def\TextCantique@title{#1}}
+\define@key{TextCantique}{ligne}[1]{\def\TextCantique@ligne{#1}}
+\define@key{TextCantique}{score}{\setkeys{score}{#1}}
+
+% Options pour score
+\define@key{score}{justified}[false]{\def\score@justified{#1}}
+\define@key{score}{notesize}[\notesize]{\def\score@notesize{#1}}
+\define@key{score}{linecolor}[\linecolor]{\def\score@linecolor{#1}}
+\define@key{score}{chord}[\chordvisibility]{\def\score@chord{#1}}
+
+\NewDocumentCommand{\TextCantique}{O{}m}{%
+    % Initialisation des valeurs par défaut
+    \def\TextCantique@ligne{1}
+    \def\TextCantique@title{\extractTitre{#2}}
+    \def\score@justified{false}
+    \def\score@notesize{\notesize}
+    \def\score@linecolor{\linecolor}
+    \def\score@chord{\chordvisibility}
+    
+    % Traitement des options
+    \setkeys{TextCantique}{#1}
+
+    \ifnum\TextCantique@ligne=1
+        \begin{center}
+            {\titrefont\textcolor{\rubricolor}{\normalsize{\TextCantique@title.}}\selectfont}%
+        \end{center}
+        \input{ressources/canticles/#2}%
+    \else
+        \begin{center}
+            {\titrefont\textcolor{\rubricolor}{\normalsize{\TextCantique@title.}}\selectfont}%
+        \end{center}
+        \scorepsalm[
+            justified=\score@justified,
+            notesize=\score@notesize,
+            linecolor=\score@linecolor,
+            chord=\score@chord
+        ]{ressources/canticles/gabc/#2}%
+        \directlua{
+            libris.startligne(
+                [[\TextCantique@ligne]], 
+                [[ressources/canticles/#2]]
+            )}%
+    \fi
+}
+
+% Commande pour les pages de couverture
+\NewDocumentCommand{\MakeCover}{m}{%
+    % Première page (sans cadre)
+    \thispagestyle{empty}
+    \ClearShipoutPictureBG  % Désactive temporairement le cadre
+    \begin{center}
+        \vspace*{\fill}
+        {\titrefont\textcolor{LibrisRed}{{\Huge\MakeUppercase{#1}\selectfont}}}
+        \vspace*{\fill}
+    \end{center}
+    \clearpage
+
+    % Deuxième page (vide avec cadre)
+    \thispagestyle{empty}
+    \null\clearpage
+    \AddToShipoutPictureBG{\cadreRouge}  % Réactive le cadre
+
+    % À la fin du document, ajouter les pages finales
+    \AtEndDocument{%
+        % Première page blanche de fin
+        \cleardoublepage
+        \thispagestyle{empty}
+        \ClearShipoutPictureBG
+        \null\clearpage
+        
+        % Dernière page avec informations
+        \thispagestyle{empty}
+        \null\vfill
+        \begin{center}
+            {\annotation\small
+                Réalisé avec Libris \@date\\
+                Version \@version
+            }
+        \end{center}
+        \clearpage
+    }%
+}
+
+%%%%%% Command Gregorio %%%%%%
+
+\grechangestafflinethickness{\linesize}
+\gresetlineheightexpansion{variable}
+\gresetlyriccentering{vowel}
+\gresetmodenumbersystem{arabic}
+\gresetannotationby{bottomline}
+\grechangedim{spacebeforeeolcustos}{7pt}{scalable}
+\grechangedim{braceshift}{-1pt}{scalable}
+\ifthenelse{\equal{\chordvisibility}{visible}}{\grechangedim{spacebeneathtext}{0.2cm}{scalable}}{}
+
+% Variables %
+\def\colorchord{LibrisBlue}
+\gresetlinecolor{\linecolor}
+
+% Style for chord%
+\newcommand{\chord}[1]{
+    \grechangestyle{abovelinestext}{\color{\colorchord}\chords\fontsize{9}{9}\selectfont}
+    \gresetabovelinestext{#1}
+}
+
+% Style for text %
+\def\annotationformat{
+    \grechangestyle{annotation}{\annotation\fontsize{9.5}{9.5}\selectfont}
+    \grechangedim{annotationseparation}{0.7ex}{scalable}
+    \grechangedim{annotationraise}{-10pt}{scalable}
+}
+
+\gresetspecial{v.}{{\color{\symbolcolor}\versicle\selectfont v/.}}
+\gresetspecial{r.}{{\color{\symbolcolor}\versicle\selectfont r/.}}
+\gresetspecial{a.}{{\color{\symbolcolor}\versicle\selectfont a/.}}
+\gresetspecial{+}{{\color{\symbolcolor}\versicle\selectfont\raisebox{-.3ex}{+}}}
+\gresetspecial{ps.}{{\color{\symbolcolor}\rubrics\itshape\selectfont Ps.}}
+\gresetspecial{tp.}{{\color{\symbolcolor}\rubrics\itshape\selectfont T.\,P.}}
+\gresetspecial{ij.}{{\color{\symbolcolor}\rubrics\itshape\selectfont ij.}}
+\gresetspecial{iij.}{{\color{\symbolcolor}\rubrics\itshape\selectfont iij.}}
+\gresetspecial{flx}{{\color{\symbolcolor}\rubrics\itshape\selectfont Flexa\,:}}
+% \gresetspecial{flx}{{\color{\symbolcolor}\rubrics\itshape\selectfont flexa}}
+\gresetspecial{dbl}{{\color{\symbolcolor}\versicle\selectfont \textdaggerdbl}}
+\gresetspecial{vel}{{\color{\symbolcolor}\rubrics\itshape\selectfont vel}}
+\gresetspecial{tsp}{\,}
+
+% Command Gregorio %
+
+% Définition des options par défaut pour \score
+\define@key{score}{notesize}[\notesize]{\def\score@notesize{#1}}
+\define@key{score}{justified}[false]{\def\score@justified{#1}}
+\define@key{score}{linecolor}[\linecolor]{\def\score@linecolor{#1}}
+\define@key{score}{chord}[\chordvisibility]{\def\score@chord{#1}}
+\define@key{score}{initial}{\setkeys{initial}{#1}}
+
+\define@key{initial}{size}[38]{\def\initial@size{#1}}
+\define@key{initial}{line}[1]{\def\initial@line{#1}}
+\define@key{initial}{ornated}[false]{\def\initial@ornated{#1}}
+\define@key{initial}{anchor}[top]{\def\initial@anchor{#1}}
+\define@key{initial}{position}[firsttop]{\def\initial@position{#1}}
+\define@key{initial}{raise}[0pt]{\def\initial@raise{#1}}
+\define@key{initial}{color}[\initialcolor]{\def\initial@color{#1}}
+
+
+\NewDocumentCommand{\score}{O{}m}{%
+    %\vspace{0.5em}
+
+    \def\GreStar{{\color{\symbolcolor}\greheightstar\selectfont}~}
+    \def\GreCross{{\color{\symbolcolor}\grealtcross\selectfont}~}
+
+    % Initialisation des valeurs par défaut
+    \def\score@notesize{\notesize}
+    \def\score@justified{false}
+    \def\score@linecolor{\linecolor}
+    \def\score@chord{\chordvisibility}
+
+    \def\initial@size{30}
+    \def\initial@line{1}
+    \def\initial@ornated{false}
+    \def\initial@raise{0pt}
+    \def\initial@anchor{bottom}% top, basline, bottom
+    \def\initial@position{lastbottom}% firsttop = top of first line, lastbaseline = baseline of last line (default), lastbottom = bottom of last line
+    \def\initial@color{\initialcolor}
+    
+    
+    % Traitement des options
+    \setkeys{score}{#1}%
+    \grechangestaffsize{\score@notesize}%
+    \chord{\score@chord}%
+    \gresetlinecolor{\score@linecolor}%
+
+    \annotationformat
+    \ifthenelse{\equal{\score@justified}{true}}{\gresetlastline{justified}}{\gresetlastline{ragged}}
+    
+    \gresetinitialanchor{\initial@anchor}%
+    \gresetinitialposition{\initial@position}
+    \gresetinitiallines{\initial@line}%
+
+    \ifthenelse{\equal{\initial@ornated}{true}}{%
+        \grechangestyle{initial}{\color{\initial@color}%
+            \ornatedInitial\fontsize{\initial@size}{\initial@size}\selectfont}%
+        \grechangedim{initialraise}{\initial@raise}{scalable}%
+        \grechangedim{beforeinitialshift}{0pt}{fixed}%
+    }{%
+        \grechangedim{beforeinitialshift}{6pt}{scalable}%
+        \grechangestyle{initial}{\color{\initial@color}%
+            \initial\fontsize{\initial@size}{\initial@size}\selectfont}%
+        \grechangedim{initialraise}{\initial@raise}{scalable}%
+    }%
+    %\grechangestyle{firstword}{\firstWord}%
+    \gregorioscore{#2}%
+    %\vspace{0.5em}
+}
+
+
+% Options pour scoreS
+\define@key{scoreS}{notesize}[\notesize]{\def\scoreS@notesize{#1}}
+\define@key{scoreS}{justified}[false]{\def\scoreS@justified{#1}}
+\define@key{scoreS}{linecolor}[\linecolor]{\def\scoreS@linecolor{#1}}
+\define@key{scoreS}{chord}[\chordvisibility]{\def\scoreS@chord{#1}}
+\define@key{scoreS}{fline}{\setkeys{fline}{#1}}
+
+\define@key{fline}{indent}{\def\fline@indent{#1}}
+\define@key{fline}{anno}{\def\fline@anno{#1}}
+
+\NewDocumentCommand{\scoreS}{O{} m}{%
+    \def\GreStar{{\color{\symbolcolor}\greheightstar\selectfont}~}
+    \def\GreCross{{\color{\symbolcolor}\grealtcross\selectfont}~}
+
+    % Initialisation des valeurs par défaut
+    \def\scoreS@notesize{\notesize}
+    \def\scoreS@justified{false}
+    \def\scoreS@linecolor{\linecolor}
+    \def\scoreS@chord{\chordvisibility}
+
+    \def\fline@indent{\quad}
+    \def\fline@anno{}
+
+    % Traitement des options
+    \setkeys{scoreS}{#1}%
+    \grechangestaffsize{\scoreS@notesize}%
+    \chord{\scoreS@chord}%
+    \gresetlinecolor{\scoreS@linecolor}%
+
+    %\annotationformat
+    \ifthenelse{\equal{\scoreS@justified}{true}}{\gresetlastline{justified}}{\gresetlastline{ragged}}
+	
+    % Configuration pour le retrait de première ligne
+    %\grechangedim{beforeinitialshift}{10pt}{scalable}
+    
+    \gresetinitiallines{0}%
+    
+    \renewcommand{\gre@noinitial}{%
+        %\grechangestyle{annotation}{\annotation\fontsize{9.5}{9.5} \fline@anno \selectfont}%
+        \grechangedim{beforeinitialshift}{10pt}{scalable}
+        \quad
+	}
+    \gregorioscore{#2}%
+}
+
+% Define the command \scorepsalm
+\define@key{scorepsalm}{justified}[false]{\def\scorepsalm@justified{#1}}
+\define@key{scorepsalm}{notesize}[\notesize]{\def\scorepsalm@notesize{#1}}
+\define@key{scorepsalm}{linecolor}[\linecolor]{\def\scorepsalm@linecolor{#1}}
+\define@key{scorepsalm}{chord}[\chordvisibility]{\def\scorepsalm@chord{#1}}
+
+\NewDocumentCommand{\scorepsalm}{O{} m}{%
+    \def\GreStar{\color{\symbolcolor}\gresixstar}
+    \def\GreCross{\color{\symbolcolor}\grealtcross}
+
+    % Initialisation des valeurs par défaut
+    \def\scorepsalm@justified{false}
+    \def\scorepsalm@notesize{\notesize}
+    \def\scorepsalm@linecolor{\linecolor}
+    \def\scorepsalm@chord{\chordvisibility}
+
+    % Traitement des options
+    \setkeys{scorepsalm}{#1}%
+    \ifthenelse{\equal{\scorepsalm@justified}{true}}{\gresetlastline{justified}}{\gresetlastline{ragged}}
+    \grechangestaffsize{\scorepsalm@notesize}%
+    \gresetlinecolor{\scorepsalm@linecolor}%
+    \chord{\scorepsalm@chord}
+
+    \gresetinitiallines{0}
+    \gregorioscore{#2}%
+}
+
+% Define the command \scoreverset
+\define@key{scoreverset}{notesize}[\notesize]{\def\scoreverset@notesize{#1}}
+\define@key{scoreverset}{linecolor}[\linecolor]{\def\scoreverset@linecolor{#1}}
+\define@key{scoreverset}{chord}[\chordvisibility]{\def\scoreverset@chord{#1}}
+
+\NewDocumentCommand{\scoreverset}{O{} m}{%
+    \def\GreStar{\color{\symbolcolor}\greheightstar}
+    \def\GreCross{\color{\symbolcolor}\grealtcross}
+
+    % Initialisation des valeurs par défaut
+    \def\scoreverset@notesize{\notesize}
+    \def\scoreverset@linecolor{\linecolor}
+    \def\scoreverset@chord{\chordvisibility}
+
+    % Traitement des options
+    \setkeys{scoreverset}{#1}%
+    \grechangestaffsize{\scoreverset@notesize}%
+    \chord{\scoreverset@chord}%
+    \gresetlinecolor{\scoreverset@linecolor}%
+
+    \gresetinitiallines{0}
+    \gregorioscore{#2}%
+}
