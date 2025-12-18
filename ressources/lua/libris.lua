@@ -17,7 +17,9 @@ end
 function libris.firstchar(texte)
     if not texte then return "" end
     local str = texte
-
+	
+	str = libris.space(str)
+	
     -- Extraire le premier caractère
     local firstChar = unicode.utf8.sub(str, 1, 1)
     
@@ -60,11 +62,23 @@ function libris.changerSymboles(texte)
     if not texte then return "" end
     
     local symboles = {
-        ["+"] = "\\GreDagger",
-        ["*"] = "\\GreStar"
+        ["+"] = "{\\nobreakspace \\GreDagger}",
+        ["*"] = "{\\nobreakspace \\GreStar}"
     }
     
     return string.gsub(texte, "[+*#@|VR]", symboles)
+end
+
+function libris.symboles(texte)
+	texte = libris.changerSymboles(texte)
+	tex.sprint(texte)
+end
+
+-- Formatage des numeros de verset dans les hymnes et autres
+function libris.nubVerest()
+	for i = 1 , 24 do
+		tex.print("\\gresetspecial{" .. i .. ".}{\\color{\\numbcolor}\\annotation\\selectfont " .. i .. ".}")
+	end
 end
 
 -- Extraire le titre d'un fichier
@@ -99,4 +113,27 @@ function libris.startligne(ligne_debut, chemin)
     f:close()
     tex.print(lines)
 end
+
+function libris.space(text)
+    return (text:gsub("([ ]*~?)([:;?!])", function(prefix, punct)
+        -- prefix = espaces + éventuellement "~"
+        -- punct  = ":" ou ";" ou "?" ou "!"
+
+        local replacement
+        if punct == ":" then
+            replacement = "\\::"       -- latex escaped :
+        elseif punct == "!" then
+            replacement = "\\:!"
+        elseif punct == "?" then
+            replacement = "\\:?"
+        else
+            replacement = "\\;;"       -- latex escaped ;
+        end
+
+        -- ⚡ On remet le prefix (espaces ou "~") avant le remplacement
+        return prefix .. replacement
+    end))
+end
+
+
 return libris
